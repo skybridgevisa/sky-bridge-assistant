@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sky Bridge Assistant</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="demo-page">
+    <h1>Sky Bridge</h1>
+    <p>Website content goes here. The assistant is ready in the bottom-right corner.</p>
+  </main>
+
+  <!-- SKY BRIDGE ASSISTANT -->
+  <button id="sb-chat-launcher" class="sb-launcher" aria-label="Open Sky Bridge Assistant" aria-expanded="false">
+    <span class="sb-launcher-avatar"><img src="sky-bridge-logo.png" alt="Sky Bridge"></span>
+    <span class="sb-unread" id="sb-unread">1</span>
+  </button>
+
+  <section id="sb-chat" class="sb-chat" aria-label="Sky Bridge Assistant" aria-hidden="true">
+    <header class="sb-header">
+      <div class="sb-brand">
+        <div class="sb-avatar"><img src="sky-bridge-logo.png" alt="Sky Bridge logo"></div>
+        <div>
+          <div class="sb-title">Sky Bridge Assistant</div>
+          <div class="sb-status"><span>●</span> ONLINE</div>
+        </div>
+      </div>
+      <div class="sb-header-actions">
+        <button id="sb-clear" class="sb-icon-btn" title="Clear chat" aria-label="Clear chat">↻</button>
+        <button id="sb-minimize" class="sb-icon-btn" title="Minimize" aria-label="Minimize">−</button>
+        <button id="sb-close" class="sb-icon-btn" title="Close" aria-label="Close">×</button>
+      </div>
+    </header>
+
+    <div id="sb-messages" class="sb-messages" role="log" aria-live="polite"></div>
+
+    <div id="sb-quick-replies" class="sb-quick-replies" aria-label="Quick replies"></div>
+
+    <form id="sb-form" class="sb-input-row">
+      <label class="sr-only" for="sb-input">Message</label>
+      <input id="sb-input" autocomplete="off" maxlength="500" placeholder="Type your question...">
+      <button type="submit" class="sb-send" aria-label="Send message">➤</button>
+    </form>
+    <div class="sb-footer">General information only • Visa approval is decided by the relevant authority.</div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
