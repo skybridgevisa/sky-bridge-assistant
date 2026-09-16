@@ -1,205 +1,208 @@
-/* ==========================================================
-   SKY BRIDGE ASSISTANT CONFIGURATION
-   Free client-side rule-based assistant. No API key required.
-   Replace these values only if your business details change.
-   ========================================================== */
+
+// ==================================================
+// SKY BRIDGE ASSISTANT CONFIGURATION
+// ==================================================
 const SKY_BRIDGE_CONFIG = {
-  counselor: {
-    name: "Zoya Siddiqui",
-    phoneDisplay: "+91 8796854108",
-    phone: "+918796854108",
-    whatsapp: "918796854108",
-    email: "skybridge.migrationoverseas@gmail.com"
-  },
-  international: {
-    name: "Cristian Dobrea",
-    phoneDisplay: "+380 63 053 7559",
-    phone: "+380630537559",
-    whatsapp: "380630537559"
-  },
-  office: {
-    head: "15A, 3rd Floor, Pocket 1,\nNear HDFC Bank,\nMayur Vihar,\nDelhi – 110091, India",
-    other: "Chisinau, Moldova 🇲🇩\nPoznan, Poland 🇵🇱"
-  },
-  disclaimer: "Visa approval is solely at the discretion of the relevant government or immigration authority. Sky Bridge provides consultancy and application assistance and does not guarantee visa approval."
+  BUSINESS_NAME: "Sky Bridge",
+  BUSINESS_EMAIL: "skybridge.migrationoverseas@gmail.com",
+  COUNSELOR_NAME: "Zoya Siddiqui",
+  COUNSELOR_PHONE: "+91 8796854108",
+  INTERNATIONAL_CONTACT_NAME: "Cristian Dobrea",
+  INTERNATIONAL_CONTACT_PHONE: "+380 63 053 7559",
+  DELHI_BRANCH_ADDRESS: "15A, 3rd Floor, Pocket 1, Near HDFC Bank, Mayur Vihar, Delhi – 110091, India"
 };
 
-/* ==========================================================
-   RULE-BASED CHATBOT LOGIC
-   This response engine is intentionally API-free and offline-safe.
-   It can later be replaced by an AI/API adapter without changing UI code.
-   ========================================================== */
+// ==================================================
+// SHARED SITE CONFIGURATION
+// ==================================================
+const cleanPhone = p => String(p).replace(/\D/g, "");
+const wa = (phone, text = "") => `https://wa.me/${cleanPhone(phone)}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
+const tel = phone => `tel:${String(phone).replace(/[^\d+]/g,"")}`;
+const mail = (email, subject = "") => `mailto:${email}${subject ? `?subject=${encodeURIComponent(subject)}` : ""}`;
 
-const WELCOME = `Hello! 👋 Welcome to Sky Bridge.\n\nI'm the Sky Bridge Assistant. I can help you with general information about our visa services, destinations, documents and consultation process.\n\nHow can I help you today?`;
-const QUICK = ["Study Visa", "Tourist Visa", "Work Permit", "Documents", "Destinations", "Talk to Counselor"];
-
-const el = id => document.getElementById(id);
-const launcher = el("sb-chat-launcher");
-const chat = el("sb-chat");
-const messages = el("sb-messages");
-const quickReplies = el("sb-quick-replies");
-const form = el("sb-form");
-const input = el("sb-input");
-const unread = el("sb-unread");
-
-function escapeHtml(text) {
-  return text.replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[ch]));
+function bindGlobalActions(){
+  document.querySelectorAll("[data-wa-counselor]").forEach(el=>{
+    el.href = wa(SKY_BRIDGE_CONFIG.COUNSELOR_PHONE, "Hello Sky Bridge, I would like to speak with a counselor.");
+    el.target = "_blank";
+    el.rel = "noopener";
+  });
+  document.querySelectorAll("[data-wa-international]").forEach(el=>{
+    el.href = wa(SKY_BRIDGE_CONFIG.INTERNATIONAL_CONTACT_PHONE, "Hello, I have an international inquiry for Sky Bridge.");
+    el.target = "_blank";
+    el.rel = "noopener";
+  });
+  document.querySelectorAll("[data-call-counselor]").forEach(el=>el.href=tel(SKY_BRIDGE_CONFIG.COUNSELOR_PHONE));
+  document.querySelectorAll("[data-call-international]").forEach(el=>el.href=tel(SKY_BRIDGE_CONFIG.INTERNATIONAL_CONTACT_PHONE));
+  document.querySelectorAll("[data-email]").forEach(el=>el.href=mail(SKY_BRIDGE_CONFIG.BUSINESS_EMAIL));
+  document.querySelectorAll("[data-map]").forEach(el=>{
+    el.href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(SKY_BRIDGE_CONFIG.DELHI_BRANCH_ADDRESS);
+    el.target="_blank"; el.rel="noopener";
+  });
 }
 
-function linkHtml(text, href, primary=false) {
-  return `<a class="sb-action${primary ? " primary" : ""}" href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+function setupMobileNav(){
+  const toggle=document.querySelector(".menu-toggle");
+  const nav=document.querySelector(".nav-links");
+  if(!toggle||!nav) return;
+  toggle.addEventListener("click",()=>nav.classList.toggle("open"));
+  nav.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>nav.classList.remove("open")));
 }
 
-function counselorActions() {
-  return `<div class="sb-contact-actions">
-    ${linkHtml("📞 Call Counselor", `tel:${SKY_BRIDGE_CONFIG.counselor.phone}`, true)}
-    ${linkHtml("💬 WhatsApp Counselor", `https://wa.me/${SKY_BRIDGE_CONFIG.counselor.whatsapp}?text=${encodeURIComponent("Hello Zoya, I need visa assistance from Sky Bridge.")}`)}
-    ${linkHtml("✉️ Email Counselor", `mailto:${SKY_BRIDGE_CONFIG.counselor.email}`)}
-  </div>`;
+// ==================================================
+// CONSULTATION FORM
+// ==================================================
+function setupConsultationForm(){
+  const form=document.querySelector("#consultationForm");
+  if(!form) return;
+  const success=document.querySelector("#formSuccess");
+  const errorFor=(id,msg)=>{
+    const node=document.querySelector(`[data-error="${id}"]`);
+    if(node){node.textContent=msg;node.style.display=msg?"block":"none";}
+  };
+  form.addEventListener("submit",e=>{
+    e.preventDefault();
+    const data=new FormData(form);
+    const name=String(data.get("name")||"").trim();
+    const phone=String(data.get("phone")||"").trim();
+    const email=String(data.get("email")||"").trim();
+    const visa=String(data.get("visa")||"").trim();
+    const destination=String(data.get("destination")||"").trim();
+    const message=String(data.get("message")||"").trim();
+    let valid=true;
+    if(!name){errorFor("name","Please enter your full name.");valid=false}else errorFor("name","");
+    if(!/^[0-9+\-\s()]{7,20}$/.test(phone)){errorFor("phone","Please enter a valid phone number.");valid=false}else errorFor("phone","");
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){errorFor("email","Please enter a valid email address.");valid=false}else errorFor("email","");
+    if(!visa){errorFor("visa","Please select a visa type.");valid=false}else errorFor("visa","");
+    if(!destination){errorFor("destination","Please enter a preferred destination.");valid=false}else errorFor("destination","");
+    if(!valid){if(success)success.style.display="none";return;}
+    const text=[
+      "Hello Sky Bridge, I would like a consultation.",
+      `Name: ${name}`,
+      `Phone: ${phone}`,
+      `Email: ${email}`,
+      `Visa Type: ${visa}`,
+      `Destination: ${destination}`,
+      `Message: ${message || "Not provided"}`
+    ].join("\n");
+    if(success){
+      success.textContent="Your enquiry is ready. WhatsApp will open with the details filled in for the counselor.";
+      success.style.display="block";
+    }
+    window.open(wa(SKY_BRIDGE_CONFIG.COUNSELOR_PHONE,text),"_blank","noopener");
+  });
 }
 
-function internationalActions() {
-  return `<div class="sb-contact-actions">
-    ${linkHtml("📞 Call", `tel:${SKY_BRIDGE_CONFIG.international.phone}`, true)}
-    ${linkHtml("💬 WhatsApp", `https://wa.me/${SKY_BRIDGE_CONFIG.international.whatsapp}?text=${encodeURIComponent("Hello Cristian, I have an international inquiry.")}`)}
-  </div>`;
+// ==================================================
+// RULE-BASED CHATBOT LOGIC
+// ==================================================
+function assistantResponse(input){
+  const q=input.toLowerCase().trim();
+  const disclaimer="Visa approval is solely at the discretion of the relevant government or immigration authority. Sky Bridge provides consultancy and application assistance and does not guarantee visa approval.";
+  if(/\b(hello|hi|hey|namaste|good morning|good evening)\b/.test(q))
+    return {text:"Hello! 👋 Welcome to Sky Bridge. I can help with general information about visa services, destinations, documents and consultation.",actions:"counselor"};
+  if(/study visa|student visa|study abroad/.test(q))
+    return {text:"A study visa allows an eligible student to study in another country. Requirements vary by destination and institution. Sky Bridge can provide general guidance regarding documentation and the application process."};
+  if(/tourist visa|visit visa|visitor visa|tourism/.test(q))
+    return {text:"Tourist visa requirements depend on the destination and your circumstances. Sky Bridge can assist with general documentation and application guidance. For a case-specific assessment, you can speak with our counselor."};
+  if(/work permit|work visa|job abroad|overseas job|employment visa/.test(q))
+    return {text:"Sky Bridge provides guidance and application assistance related to work permits. Requirements vary by country and job situation. Would you like to speak with our counselor?",actions:"counselor"};
+  if(/business visa/.test(q))
+    return {text:"A business visa may be used for eligible business-related travel, depending on the destination. Requirements and permitted activities vary. A counselor can review your destination and purpose."};
+  if(/family visa|dependent visa|spouse visa|dependant/.test(q))
+    return {text:"Family or dependent visa requirements vary by destination, relationship, sponsor status and applicant circumstances. A counselor can provide case-specific guidance."};
+  if(/document|documents|paperwork|requirements/.test(q))
+    return {text:"Documents depend on the visa type and destination. Common documents may include a valid passport, photographs, financial documents and supporting documents. Exact requirements should be confirmed for your specific destination."};
+  if(/processing time|how long|processing take|time.*visa/.test(q))
+    return {text:"Processing times vary by destination, visa category, application volume and individual circumstances. The relevant immigration authority makes the final decision."};
+  if(/eligible|eligibility|qualification|qualify/.test(q))
+    return {text:"General eligibility depends on the destination, visa category and your individual circumstances. For personalized assessment, please contact a Sky Bridge counselor." ,actions:"counselor"};
+  if(/refus|reject|rejected|denied/.test(q))
+    return {text:"If an application is refused, the next steps depend on the refusal reason and the destination's rules. Sky Bridge can help you understand the available application-assistance options. A government/immigration authority makes the decision." ,actions:"counselor"};
+  if(/destination|countries|country|where.*go|canada|uk|united kingdom|australia|usa|germany|new zealand|ireland|moldova|poland/.test(q))
+    return {text:"Sky Bridge can provide general guidance for destinations including Canada, the United Kingdom, Australia, USA, Germany, New Zealand, Ireland, Moldova and Poland. Requirements vary by destination."};
+  if(/international inquiry|international|cristian|380 63|380630537559/.test(q))
+    return {text:`International Inquiry\n${SKY_BRIDGE_CONFIG.INTERNATIONAL_CONTACT_NAME}\n${SKY_BRIDGE_CONFIG.INTERNATIONAL_CONTACT_PHONE}\n\nUse the Call or WhatsApp option below for an international inquiry.`,actions:"international"};
+  if(/office|address|branch|mayur vihar|where.*located|location/.test(q))
+    return {text:`Head Branch:\n${SKY_BRIDGE_CONFIG.DELHI_BRANCH_ADDRESS}\n\nOther locations:\nChisinau, Moldova 🇲🇩\nPoznan, Poland 🇵🇱\n\nNo street addresses are provided for the other locations.`,actions:"office"};
+  if(/counselor|counsellor|contact|phone|call|whatsapp|talk to someone|consult/.test(q))
+    return {text:`Counselor: ${SKY_BRIDGE_CONFIG.COUNSELOR_NAME}\n${SKY_BRIDGE_CONFIG.COUNSELOR_PHONE}\n${SKY_BRIDGE_CONFIG.BUSINESS_EMAIL}\n\nWould you like to contact a counselor?`,actions:"counselor"};
+  if(/guarantee|guaranteed|100%|approval sure|sure visa/.test(q))
+    return {text:disclaimer};
+  if(/visa|immigration|application/.test(q))
+    return {text:`Sky Bridge provides general visa consultancy and application assistance. Requirements depend on the destination and visa category.\n\n${disclaimer}`,actions:"counselor"};
+  return {text:"I'm sorry, I don't have enough information to answer that accurately.\n\nYou can contact our counselor for personalized guidance:\n\nZoya Siddiqui\n+91 8796854108\n\nWould you like to contact a counselor?",actions:"fallback"};
 }
 
-function addMessage(text, role="assistant", html=false) {
-  const row = document.createElement("div");
-  row.className = `sb-msg ${role}`;
-  const bubble = document.createElement("div");
-  bubble.className = "sb-bubble";
-  bubble.innerHTML = html ? text : escapeHtml(text);
-  row.appendChild(bubble);
-  messages.appendChild(row);
-  messages.scrollTop = messages.scrollHeight;
+function actionHtml(type){
+  if(type==="counselor"||type==="fallback")
+    return `<div class="chat-contact-actions">
+      <a href="${wa(SKY_BRIDGE_CONFIG.COUNSELOR_PHONE,"Hello Sky Bridge, I would like personalized guidance.")}" target="_blank" rel="noopener">💬 WhatsApp Counselor</a>
+      <a href="${tel(SKY_BRIDGE_CONFIG.COUNSELOR_PHONE)}">📞 Call Counselor</a>
+      <a href="${mail(SKY_BRIDGE_CONFIG.BUSINESS_EMAIL,"Sky Bridge consultation")}" >✉️ Email</a>
+    </div>`;
+  if(type==="international")
+    return `<div class="chat-contact-actions">
+      <a href="${wa(SKY_BRIDGE_CONFIG.INTERNATIONAL_CONTACT_PHONE,"Hello, I have an international inquiry for Sky Bridge.")}" target="_blank" rel="noopener">💬 WhatsApp</a>
+      <a href="${tel(SKY_BRIDGE_CONFIG.INTERNATIONAL_CONTACT_PHONE)}">📞 Call</a>
+    </div>`;
+  if(type==="office")
+    return `<div class="chat-contact-actions"><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SKY_BRIDGE_CONFIG.DELHI_BRANCH_ADDRESS)}" target="_blank" rel="noopener">📍 Open Delhi Office Map</a></div>`;
+  return "";
 }
 
-function showTyping() {
-  const row = document.createElement("div");
-  row.className = "sb-msg assistant typing";
-  row.id = "sb-typing";
-  row.innerHTML = `<div class="sb-bubble"><span class="sb-dots"><i></i><i></i><i></i></span></div>`;
-  messages.appendChild(row);
-  messages.scrollTop = messages.scrollHeight;
+function setupChatbot(){
+  const root=document.querySelector("#sky-chatbot-root");
+  if(!root) return;
+  root.innerHTML=`
+    <button class="chat-launcher" id="chatLauncher" aria-label="Open Sky Bridge Assistant">
+      <img src="assets/logo.png" alt="Sky Bridge Assistant">
+      <span class="chat-badge" id="chatBadge">1</span>
+    </button>
+    <section class="chat-window" id="chatWindow" aria-label="Sky Bridge Assistant" role="dialog">
+      <header class="chat-header">
+        <img src="assets/logo.png" alt="Sky Bridge logo">
+        <div class="chat-title"><strong>Sky Bridge Assistant</strong><span>● ONLINE • Visa Support Assistant</span></div>
+        <button class="chat-head-btn" id="chatMin" aria-label="Minimize chatbot">−</button>
+        <button class="chat-head-btn" id="chatClose" aria-label="Close chatbot">×</button>
+      </header>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="quick-replies" id="quickReplies">
+        <button>Study Visa</button><button>Tourist Visa</button><button>Work Permit</button>
+        <button>Documents</button><button>Destinations</button><button>Talk to Counselor</button>
+      </div>
+      <div class="chat-tools"><button class="chat-clear" id="chatClear">Clear chat</button></div>
+      <form class="chat-input" id="chatForm">
+        <input id="chatInput" aria-label="Message" placeholder="Type your question..." autocomplete="off">
+        <button class="chat-send" aria-label="Send message">➤</button>
+      </form>
+    </section>`;
+  const launcher=root.querySelector("#chatLauncher"), win=root.querySelector("#chatWindow");
+  const messages=root.querySelector("#chatMessages"), badge=root.querySelector("#chatBadge");
+  const addMsg=(text,who="assistant",actions="")=>{
+    const div=document.createElement("div");div.className=`msg ${who}`;div.textContent=text;
+    messages.appendChild(div);
+    if(actions){const holder=document.createElement("div");holder.innerHTML=actionHtml(actions);messages.appendChild(holder.firstElementChild);}
+    messages.scrollTop=messages.scrollHeight;
+  };
+  const welcome=()=>addMsg("Hello! 👋 Welcome to Sky Bridge.\n\nI'm the Sky Bridge Assistant. I can help you with general information about our visa services, destinations, documents and consultation process.\n\nHow can I help you today?");
+  const openChat=()=>{win.classList.add("open");badge.style.display="none";if(!messages.children.length)welcome();setTimeout(()=>root.querySelector("#chatInput").focus(),50)};
+  launcher.addEventListener("click",openChat);
+  root.querySelector("#chatClose").addEventListener("click",()=>win.classList.remove("open"));
+  root.querySelector("#chatMin").addEventListener("click",()=>win.classList.remove("open"));
+  root.querySelector("#chatClear").addEventListener("click",()=>{messages.innerHTML="";welcome()});
+  root.querySelectorAll("#quickReplies button").forEach(b=>b.addEventListener("click",()=>send(b.textContent)));
+  root.querySelector("#chatForm").addEventListener("submit",e=>{e.preventDefault();send(root.querySelector("#chatInput").value)});
+  function send(raw){
+    const text=String(raw||"").trim();if(!text)return;
+    addMsg(text,"user");root.querySelector("#chatInput").value="";
+    const typing=document.createElement("div");typing.className="msg assistant typing";typing.innerHTML="<i></i><i></i><i></i>";messages.appendChild(typing);messages.scrollTop=messages.scrollHeight;
+    setTimeout(()=>{typing.remove();const r=assistantResponse(text);addMsg(r.text,"assistant",r.actions)},450);
+  }
 }
 
-function hideTyping() { el("sb-typing")?.remove(); }
-
-function setQuickReplies(items=QUICK) {
-  quickReplies.innerHTML = items.map(item => `<button type="button" class="sb-quick" data-quick="${escapeHtml(item)}">${escapeHtml(item)}</button>`).join("");
-}
-
-function openChat() {
-  chat.classList.add("open");
-  chat.setAttribute("aria-hidden", "false");
-  launcher.setAttribute("aria-expanded", "true");
-  unread.classList.add("hidden");
-  setTimeout(() => input.focus(), 100);
-}
-function closeChat() {
-  chat.classList.remove("open");
-  chat.setAttribute("aria-hidden", "true");
-  launcher.setAttribute("aria-expanded", "false");
-}
-
-function normalize(s) { return s.toLowerCase().replace(/[^a-z0-9+\s]/g, " ").replace(/\s+/g, " ").trim(); }
-function hasAny(s, words) { return words.some(w => s.includes(w)); }
-
-function responseFor(raw) {
-  const s = normalize(raw);
-
-  if (hasAny(s, ["international inquiry", "international enquiry", "international", "overseas inquiry", "overseas enquiry", "christian dobrea", "cristian dobrea"])) {
-    return { text: `For international inquiries, you can contact:\n\n${SKY_BRIDGE_CONFIG.international.name}\n${SKY_BRIDGE_CONFIG.international.phoneDisplay}`, html: internationalActions(), quick: ["Talk to Counselor", "Office Address"] };
-  }
-
-  if (hasAny(s, ["office address", "office location", "where is your office", "address", "head branch", "branch location"])) {
-    return { text: `Head Branch:\n${SKY_BRIDGE_CONFIG.office.head}\n\nOther locations:\n${SKY_BRIDGE_CONFIG.office.other}`, quick: ["Talk to Counselor", "Destinations"] };
-  }
-
-  if (hasAny(s, ["counselor", "counsellor", "contact", "phone number", "call you", "speak to", "talk to someone", "zoya", "consultation"])) {
-    return { text: `${SKY_BRIDGE_CONFIG.counselor.name}\n${SKY_BRIDGE_CONFIG.counselor.phoneDisplay}\n${SKY_BRIDGE_CONFIG.counselor.email}\n\nFor personalized visa guidance, please contact our counselor.`, html: counselorActions(), quick: ["Study Visa", "Tourist Visa", "Work Permit"] };
-  }
-
-  if (hasAny(s, ["study visa", "student visa", "study abroad", "student permit", "education visa"])) {
-    return { text: "A study visa allows an eligible student to study in another country. Requirements vary by destination and institution. Sky Bridge can provide general guidance regarding documentation and the application process.\n\nFor a case-specific assessment, you can speak with our counselor.", html: counselorActions(), quick: ["Documents", "Destinations", "Talk to Counselor"] };
-  }
-
-  if (hasAny(s, ["tourist visa", "tourism visa", "visit visa", "visitor visa", "holiday visa", "travel visa"])) {
-    return { text: "Tourist visa requirements depend on the destination and your circumstances. Sky Bridge can assist with general documentation and application guidance. For a case-specific assessment, you can speak with our counselor.", html: counselorActions(), quick: ["Documents", "Destinations", "Talk to Counselor"] };
-  }
-
-  if (hasAny(s, ["work permit", "work visa", "job visa", "employment visa", "work abroad", "working visa"])) {
-    return { text: "Sky Bridge provides guidance and application assistance related to work permits. Requirements vary by country and job situation. Would you like to speak with our counselor?", html: counselorActions(), quick: ["Destinations", "Documents", "Talk to Counselor"] };
-  }
-
-  if (hasAny(s, ["business visa", "business visit", "commercial visa"])) {
-    return { text: "A business visa is generally used for eligible business-related travel, such as meetings or conferences. Requirements vary by destination and purpose. For personalized guidance, please speak with a Sky Bridge counselor.", html: counselorActions(), quick: ["Documents", "Destinations", "Talk to Counselor"] };
-  }
-
-  if (hasAny(s, ["family visa", "dependent visa", "dependant visa", "spouse visa", "family permit"])) {
-    return { text: "Family and dependent visa requirements depend on the destination, relationship and the primary applicant's status. Exact eligibility should be confirmed for your specific case. Please speak with a Sky Bridge counselor for personalized guidance.", html: counselorActions(), quick: ["Documents", "Destinations", "Talk to Counselor"] };
-  }
-
-  if (hasAny(s, ["document", "documents", "paperwork", "required papers", "what do i need", "requirements"])) {
-    return { text: "Documents depend on the visa type and destination. Common documents may include a valid passport, photographs, financial documents and supporting documents. Exact requirements should be confirmed for your specific destination.", quick: ["Study Visa", "Tourist Visa", "Work Permit", "Talk to Counselor"] };
-  }
-
-  if (hasAny(s, ["processing time", "how long", "how many days", "time take", "processing days", "visa time"])) {
-    return { text: "Processing times vary by destination, visa category, application volume and individual circumstances. The relevant immigration authority makes the final decision.", quick: ["Talk to Counselor", "Documents", "Destinations"] };
-  }
-
-  if (hasAny(s, ["eligible", "eligibility", "can i apply", "qualification", "qualify", "age limit", "requirements for me"])) {
-    return { text: "Eligibility depends on the destination, visa category and your individual circumstances. I can provide general information, but a personalized assessment should be handled by a Sky Bridge counselor.", html: counselorActions(), quick: ["Study Visa", "Tourist Visa", "Work Permit"] };
-  }
-
-  if (hasAny(s, ["destination", "destinations", "countries", "which country", "where can i go", "country list"])) {
-    return { text: "Sky Bridge can provide general guidance for international visa and travel-related inquiries. Destination-specific requirements can change, so the exact country and visa category should be checked for your case. Tell me the destination you are interested in, or contact our counselor for a case-specific assessment.", html: counselorActions(), quick: ["Work Permit", "Study Visa", "Tourist Visa"] };
-  }
-
-  if (hasAny(s, ["visa process", "application process", "how to apply", "apply for visa", "process"] )) {
-    return { text: "A typical visa process may involve selecting the correct visa category, checking eligibility, preparing supporting documents, submitting the application and completing any required appointment or biometric steps. The exact process varies by destination and visa type.", html: `<div class="sb-contact-actions">${linkHtml("📞 Talk to Counselor", `tel:${SKY_BRIDGE_CONFIG.counselor.phone}`, true)}</div>`, quick: ["Documents", "Processing Time", "Talk to Counselor"] };
-  }
-
-  if (hasAny(s, ["guarantee", "guaranteed", "100 percent", "100%", "sure approval", "visa pakka", "approval guarantee"])) {
-    return { text: SKY_BRIDGE_CONFIG.disclaimer, quick: ["Talk to Counselor", "Documents"] };
-  }
-
-  if (hasAny(s, ["hello", "hi", "hey", "namaste", "good morning", "good evening", "good afternoon"])) {
-    return { text: "Hello! 👋 How can I help you with general visa information today?", quick: QUICK };
-  }
-
-  return { text: `I'm sorry, I don't have enough information to answer that accurately.\n\nYou can contact our counselor for personalized guidance:\n\n${SKY_BRIDGE_CONFIG.counselor.name}\n${SKY_BRIDGE_CONFIG.counselor.phoneDisplay}\n\nWould you like to contact a counselor?`, html: counselorActions(), quick: ["Talk to Counselor", "Documents"] };
-}
-
-function sendMessage(text) {
-  text = text.trim();
-  if (!text) return;
-  addMessage(text, "user");
-  input.value = "";
-  setQuickReplies([]);
-  showTyping();
-  window.setTimeout(() => {
-    hideTyping();
-    const answer = responseFor(text);
-    addMessage(answer.text + (answer.html ? answer.html : ""), "assistant", true);
-    setQuickReplies(answer.quick || QUICK);
-  }, 450 + Math.random() * 350);
-}
-
-function resetChat() {
-  messages.innerHTML = "";
-  addMessage(WELCOME);
-  setQuickReplies();
-}
-
-launcher.addEventListener("click", () => chat.classList.contains("open") ? closeChat() : openChat());
-el("sb-close").addEventListener("click", closeChat);
-el("sb-minimize").addEventListener("click", closeChat);
-el("sb-clear").addEventListener("click", resetChat);
-form.addEventListener("submit", e => { e.preventDefault(); sendMessage(input.value); });
-quickReplies.addEventListener("click", e => { const btn = e.target.closest("[data-quick]"); if (btn) sendMessage(btn.dataset.quick); });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && chat.classList.contains("open")) closeChat(); });
-
-resetChat();
+document.addEventListener("DOMContentLoaded",()=>{
+  bindGlobalActions();
+  setupMobileNav();
+  setupConsultationForm();
+  setupChatbot();
+});
