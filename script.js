@@ -5,10 +5,10 @@
 const SKY_BRIDGE_CONFIG = {
   BUSINESS_NAME: "Sky Bridge",
   BUSINESS_EMAIL: "skybridge.migrationoverseas@gmail.com",
-  COUNSELOR_NAME: "Zoya Siddiqui",
-  COUNSELOR_PHONE: "+91 8796854108",
   HEAD_COUNSELOR_NAME: "Shayan Malik",
   HEAD_COUNSELOR_PHONE: "+91 8527841206",
+  COUNSELOR_NAME: "Zoya Siddiqui",
+  COUNSELOR_PHONE: "+91 8796854108",
   INTERNATIONAL_CONTACT_NAME: "Cristian Dobrea",
   INTERNATIONAL_CONTACT_PHONE: "+380 63 053 7559",
   DELHI_BRANCH_ADDRESS: "15A, 3rd Floor, Pocket 1, Near HDFC Bank, Mayur Vihar, Delhi – 110091, India"
