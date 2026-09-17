@@ -7,6 +7,8 @@ const SKY_BRIDGE_CONFIG = {
   BUSINESS_EMAIL: "skybridge.migrationoverseas@gmail.com",
   COUNSELOR_NAME: "Zoya Siddiqui",
   COUNSELOR_PHONE: "+91 8796854108",
+  CONTACT_PERSON_NAME: "Shayan Malik",
+  CONTACT_PERSON_PHONE: "+91 8527841206",
   INTERNATIONAL_CONTACT_NAME: "Cristian Dobrea",
   INTERNATIONAL_CONTACT_PHONE: "+380 63 053 7559",
   DELHI_BRANCH_ADDRESS: "15A, 3rd Floor, Pocket 1, Near HDFC Bank, Mayur Vihar, Delhi – 110091, India"
@@ -32,6 +34,8 @@ function bindGlobalActions(){
     el.rel = "noopener";
   });
   document.querySelectorAll("[data-call-counselor]").forEach(el=>el.href=tel(SKY_BRIDGE_CONFIG.COUNSELOR_PHONE));
+  document.querySelectorAll("[data-wa-contact-person]").forEach(el=>el.href=wa(SKY_BRIDGE_CONFIG.CONTACT_PERSON_PHONE, "Hello Shayan Malik, I would like to contact Sky Bridge."));
+  document.querySelectorAll("[data-call-contact-person]").forEach(el=>el.href=tel(SKY_BRIDGE_CONFIG.CONTACT_PERSON_PHONE));
   document.querySelectorAll("[data-call-international]").forEach(el=>el.href=tel(SKY_BRIDGE_CONFIG.INTERNATIONAL_CONTACT_PHONE));
   document.querySelectorAll("[data-email]").forEach(el=>el.href=mail(SKY_BRIDGE_CONFIG.BUSINESS_EMAIL));
   document.querySelectorAll("[data-map]").forEach(el=>{
@@ -124,6 +128,8 @@ function assistantResponse(input){
     return {text:`International Inquiry\n${SKY_BRIDGE_CONFIG.INTERNATIONAL_CONTACT_NAME}\n${SKY_BRIDGE_CONFIG.INTERNATIONAL_CONTACT_PHONE}\n\nUse the Call or WhatsApp option below for an international inquiry.`,actions:"international"};
   if(/office|address|branch|mayur vihar|where.*located|location/.test(q))
     return {text:`Head Branch:\n${SKY_BRIDGE_CONFIG.DELHI_BRANCH_ADDRESS}\n\nOther locations:\nChisinau, Moldova 🇲🇩\nPoznan, Poland 🇵🇱\n\nNo street addresses are provided for the other locations.`,actions:"office"};
+  if(/shayan|contact person/.test(q))
+    return {text:`Contact Person: ${SKY_BRIDGE_CONFIG.CONTACT_PERSON_NAME}\n${SKY_BRIDGE_CONFIG.CONTACT_PERSON_PHONE}\n\nWould you like to contact Shayan Malik?`,actions:"contact-person"};
   if(/counselor|counsellor|contact|phone|call|whatsapp|talk to someone|consult/.test(q))
     return {text:`Counselor: ${SKY_BRIDGE_CONFIG.COUNSELOR_NAME}\n${SKY_BRIDGE_CONFIG.COUNSELOR_PHONE}\n${SKY_BRIDGE_CONFIG.BUSINESS_EMAIL}\n\nWould you like to contact a counselor?`,actions:"counselor"};
   if(/guarantee|guaranteed|100%|approval sure|sure visa/.test(q))
@@ -139,6 +145,11 @@ function actionHtml(type){
       <a href="${wa(SKY_BRIDGE_CONFIG.COUNSELOR_PHONE,"Hello Sky Bridge, I would like personalized guidance.")}" target="_blank" rel="noopener">💬 WhatsApp Counselor</a>
       <a href="${tel(SKY_BRIDGE_CONFIG.COUNSELOR_PHONE)}">📞 Call Counselor</a>
       <a href="${mail(SKY_BRIDGE_CONFIG.BUSINESS_EMAIL,"Sky Bridge consultation")}" >✉️ Email</a>
+    </div>`;
+  if(type==="contact-person")
+    return `<div class="chat-contact-actions">
+      <a href="${wa(SKY_BRIDGE_CONFIG.CONTACT_PERSON_PHONE,"Hello Shayan Malik, I would like to contact Sky Bridge.")}" target="_blank" rel="noopener">💬 WhatsApp Shayan</a>
+      <a href="${tel(SKY_BRIDGE_CONFIG.CONTACT_PERSON_PHONE)}">📞 Call Shayan</a>
     </div>`;
   if(type==="international")
     return `<div class="chat-contact-actions">
