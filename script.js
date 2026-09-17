@@ -34,8 +34,8 @@ function bindGlobalActions(){
     el.rel = "noopener";
   });
   document.querySelectorAll("[data-call-counselor]").forEach(el=>el.href=tel(SKY_BRIDGE_CONFIG.COUNSELOR_PHONE));
-  document.querySelectorAll("[data-wa-contact-person]").forEach(el=>el.href=wa(SKY_BRIDGE_CONFIG.CONTACT_PERSON_PHONE, "Hello Shayan Malik, I would like to contact Sky Bridge."));
-  document.querySelectorAll("[data-call-contact-person]").forEach(el=>el.href=tel(SKY_BRIDGE_CONFIG.CONTACT_PERSON_PHONE));
+  document.querySelectorAll("[data-wa-contact-person]").forEach(el=>el.href=wa(SKY_BRIDGE_CONFIG.COUNSELOR, "Hello Shayan Malik, I would like to contact Sky Bridge."));
+  document.querySelectorAll("[data-call-contact-person]").forEach(el=>el.href=tel(SKY_BRIDGE_CONFIG.COUNSELOR_PHONE));
   document.querySelectorAll("[data-call-international]").forEach(el=>el.href=tel(SKY_BRIDGE_CONFIG.INTERNATIONAL_CONTACT_PHONE));
   document.querySelectorAll("[data-email]").forEach(el=>el.href=mail(SKY_BRIDGE_CONFIG.BUSINESS_EMAIL));
   document.querySelectorAll("[data-map]").forEach(el=>{
