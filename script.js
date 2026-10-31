@@ -217,3 +217,35 @@ document.addEventListener("DOMContentLoaded",()=>{
   setupConsultationForm();
   setupChatbot();
 });
+/* SKY BRIDGE CREATIVE SCROLL ANIMATIONS */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  const revealElements = document.querySelectorAll(
+    ".section-heading, .service-card, .destination-card, .work-item, .work-gallery a"
+  );
+
+  revealElements.forEach(function (element, index) {
+    element.classList.add("reveal");
+
+    if (element.classList.contains("destination-card")) {
+      element.classList.add("reveal-scale");
+    }
+  });
+
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.12
+  });
+
+  revealElements.forEach(function (element) {
+    observer.observe(element);
+  });
+
+});
