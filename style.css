@@ -194,3 +194,118 @@ textarea{min-height:130px;resize:vertical}
 .destination-content b{font-size:22px}
 .destination-content small{opacity:.92;font-size:14px}
 @media(max-width:700px){.destination{min-height:185px}}
+
+/* =====================================
+   SKY BRIDGE — CREATIVE SCROLL UPGRADE
+===================================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* Scroll reveal animation */
+.reveal,
+.reveal-left,
+.reveal-right,
+.reveal-scale {
+  opacity: 0;
+  transition:
+    opacity 0.9s ease,
+    transform 0.9s cubic-bezier(.2,.7,.2,1);
+}
+
+.reveal {
+  transform: translateY(55px);
+}
+
+.reveal-left {
+  transform: translateX(-65px);
+}
+
+.reveal-right {
+  transform: translateX(65px);
+}
+
+.reveal-scale {
+  transform: scale(.88);
+}
+
+.reveal.is-visible,
+.reveal-left.is-visible,
+.reveal-right.is-visible,
+.reveal-scale.is-visible {
+  opacity: 1;
+  transform: translate(0) scale(1);
+}
+
+/* Premium hover effects */
+.service-card,
+.destination-card,
+.work-item,
+.work-gallery a {
+  transition:
+    transform .45s ease,
+    box-shadow .45s ease;
+}
+
+.service-card:hover,
+.destination-card:hover,
+.work-item:hover,
+.work-gallery a:hover {
+  transform: translateY(-9px);
+  box-shadow: 0 22px 45px rgba(5, 25, 55, .18);
+}
+
+/* Image motion */
+.work-item img,
+.work-gallery img,
+.destination-card {
+  transition: transform .6s ease;
+}
+
+.work-item:hover img,
+.work-gallery a:hover img {
+  transform: scale(1.06);
+}
+
+/* Smooth navigation */
+header,
+nav,
+.navbar {
+  transition: background .4s ease, box-shadow .4s ease;
+}
+
+/* Mobile performance */
+@media (max-width: 768px) {
+  .reveal-left,
+  .reveal-right {
+    transform: translateY(30px);
+  }
+
+  .reveal,
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale {
+    transition-duration: .65s;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reveal,
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
