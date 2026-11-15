@@ -6,9 +6,9 @@ const SKY_BRIDGE_CONFIG = {
   BUSINESS_NAME: "Sky Bridge",
   BUSINESS_EMAIL: "skybridge.migrationoverseas@gmail.com",
   COUNSELOR_NAME: "Shayan Malik",
-  COUNSELOR_PHONE: "+91 8527841206",
+  COUNSELOR_PHONE: "+91 9205221368",
   CONTACT_PERSON_NAME: "Shayan Malik",
-  CONTACT_PERSON_PHONE: "+91 8527841206",
+  CONTACT_PERSON_PHONE: "+91 9205221368",
   INTERNATIONAL_CONTACT_NAME: "Cristian Dobrea",
   INTERNATIONAL_CONTACT_PHONE: "+380 63 053 7559",
   DELHI_BRANCH_ADDRESS: "15A, 3rd Floor, Pocket 1, Near HDFC Bank, Mayur Vihar, Delhi – 110091, India"
@@ -136,7 +136,7 @@ function assistantResponse(input){
     return {text:disclaimer};
   if(/visa|immigration|application/.test(q))
     return {text:`Sky Bridge provides general visa consultancy and application assistance. Requirements depend on the destination and visa category.\n\n${disclaimer}`,actions:"counselor"};
-  return {text:"I'm sorry, I don't have enough information to answer that accurately.\n\nYou can contact our counselor for personalized guidance:\n\nShayan Malik\n+91 8527841206\n\nWould you like to contact a counselor?",actions:"fallback"};
+  return {text:"I'm sorry, I don't have enough information to answer that accurately.\n\nYou can contact our counselor for personalized guidance:\n\nShayan Malik\n+91 9205221368\n\nWould you like to contact a counselor?",actions:"fallback"};
 }
 
 function actionHtml(type){
